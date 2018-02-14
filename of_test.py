@@ -23,12 +23,8 @@ a = old_frame.shape
 
 ######### defining points
 fact = 40
-
 num_points = int(a[0]*a[1]/(fact**2))
 points_to_track = np.zeros((num_points,1,2))
-# print(a[0],a[1])
-# a = np.linspace(0,a[0],num_points)
-# b = np.linspace(0,a[1],num_points)
 x = np.arange(a[0])
 y = np.arange(a[1])
 x = x[::fact]
@@ -36,12 +32,8 @@ y = y[::fact]
 
 points_to_track[:,0,1] = np.repeat(x,int((a[1])/fact))
 points_to_track[:,0,0] = np.tile(y,int((a[0])/fact))
-# print(points_to_track[:,0,:])
-# points_to_track[:,0,0],points_to_track[:,0,1] = np.meshgrid(points_to_track[:,0,0],points_to_track[:,0,1])
-# exit()
 p0 = points_to_track
 p0 = points_to_track.astype(np.float32)
-# print(p0.shape)
 
 
 ########## defining regions
@@ -67,24 +59,24 @@ while(1):
     # calculate optical flow
     p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
 
+    ###### calculating speed and converting to tuples for showing on image
     speed = p1-p0
     p1_ = p1[:,0,:]
     p1_ = tuple(map(tuple,p1_))
     p0_ = p0[:,0,:]
     p0_ = tuple(map(tuple,p0_))
-    # print(p1_,p0_)
-    # exit()
+
+    #### show regions and optical flow
     mask_height = cv2.rectangle(mask, region_height[0],region_height[1], (0,0,255), 1)
     mask_center_1 = cv2.rectangle(mask, region_center_1[0],region_center_1[1], (0,255,255), 1)
     mask_center_2 = cv2.rectangle(mask, region_center_2[0],region_center_2[1], (0,255,255), 1)	
     mask_avoid = cv2.rectangle(mask, region_avoid[0],region_avoid[1], (255,0,0), 1)	
-    # print(len(p1))
     for i in range(len(p1)):
     	# print(p0_[i],p1_[i])
     	mask_of = cv2.arrowedLine(mask,p0_[i],p1_[i],(255,255,0),1)
 
 
-############ optical flow in regions
+    ############ optical flow in regions
 
     id_height = np.where(np.logical_and(np.logical_and(np.logical_and(p0[:,0,1]>=region_height[0][1] , p0[:,0,1]<=region_height[1][1]),p0[:,0,0]>=region_height[0][0]),p0[:,0,0]<=region_height[1][0]))
     id_height = id_height[0]
@@ -138,14 +130,14 @@ while(1):
     mask_avoid_mean = cv2.arrowedLine(mask,(point_init[0],point_init[1]),(int(point_init[0]+scale_mean_avoid_show*of_avoid_mean[0]),int(point_init[1]+scale_mean_avoid_show*of_avoid_mean[1])),(255,255,0),3)
     
 
-#### testing optical flow in  regions
+    #### testing optical flow in  regions
     # id_height = id_avoid
     # for i in range(len(id_height)):
     #     p_temp = (int(p0_[id_height[i]][0]+20), int(p0_[id_height[i]][1]+10))
     #     mask_add = cv2.arrowedLine(mask,p0_[id_height[i]],p_temp,(0,0,255),2)
 
 
-#### adding all this on image for visualisation
+    #### adding all this on image for visualisation
     img = cv2.add(frame,mask_height_mean)
     img = cv2.add(frame,mask_center_1_mean)
     img = cv2.add(frame,mask_center_2_mean)
@@ -161,6 +153,5 @@ while(1):
         break
     # Now update the previous frame and previous points
     old_gray = frame_gray.copy()
-    # p0 = np.copy(p1)
 cv2.destroyAllWindows()
 # cap.release()
