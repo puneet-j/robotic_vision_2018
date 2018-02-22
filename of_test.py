@@ -1,7 +1,16 @@
 import numpy as np
+import sys
+rm_python2 = []
+for p in sys.path:
+    if p.find('python2') != -1:
+        rm_python2.append(p)
+for p in rm_python2:
+    sys.path.remove(p)
 import cv2
 cap = cv2.VideoCapture(0)
 # params for ShiTomasi corner detection
+
+# print()
 
 feature_params = dict( maxCorners = 100,
                        qualityLevel = 0.3,
@@ -58,7 +67,8 @@ while(1):
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # calculate optical flow
     p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
-
+    print("p1",p1,"p0",p0)#,"speed",p1-p0)
+    exit()
     ###### calculating speed and converting to tuples for showing on image
     speed = p1-p0
     p1_ = p1[:,0,:]
@@ -69,8 +79,8 @@ while(1):
     #### show regions and optical flow
     mask_height = cv2.rectangle(mask, region_height[0],region_height[1], (0,0,255), 1)
     mask_center_1 = cv2.rectangle(mask, region_center_1[0],region_center_1[1], (0,255,255), 1)
-    mask_center_2 = cv2.rectangle(mask, region_center_2[0],region_center_2[1], (0,255,255), 1)	
-    mask_avoid = cv2.rectangle(mask, region_avoid[0],region_avoid[1], (255,0,0), 1)	
+    mask_center_2 = cv2.rectangle(mask, region_center_2[0],region_center_2[1], (0,255,255), 1)
+    mask_avoid = cv2.rectangle(mask, region_avoid[0],region_avoid[1], (255,0,0), 1)
     for i in range(len(p1)):
     	# print(p0_[i],p1_[i])
     	mask_of = cv2.arrowedLine(mask,p0_[i],p1_[i],(255,255,0),1)
@@ -86,9 +96,9 @@ while(1):
     of_height_mean[1] = np.mean(of_height[1])
     scale_mean_height_show = 20.0
     # print(of_height_mean)
-    point_init = [int(a[1]/2),int((1-height_ratio_y/2)*a[0])]   
+    point_init = [int(a[1]/2),int((1-height_ratio_y/2)*a[0])]
     mask_height_mean = cv2.arrowedLine(mask,(point_init[0],point_init[1]),(int(point_init[0]+scale_mean_height_show*of_height_mean[0]),int(point_init[1]+scale_mean_height_show*of_height_mean[1])),(255,255,0),3)
-    
+
 
 
 
@@ -102,7 +112,7 @@ while(1):
     # print(of_height_mean)
     point_init = [int(center_ratio_x*a[1]/2),int(a[0]/2)]
     mask_center_1_mean = cv2.arrowedLine(mask,(point_init[0],point_init[1]),(int(point_init[0]+scale_mean_center_1_show*of_center_1_mean[0]),int(point_init[1]+scale_mean_center_1_show*of_center_1_mean[1])),(255,255,0),3)
-    
+
 
 
     id_center_2 = np.where(np.logical_and(np.logical_and(np.logical_and(p0[:,0,1]>=region_center_2[0][1] , p0[:,0,1]<=region_center_2[1][1]),p0[:,0,0]>=region_center_2[0][0]),p0[:,0,0]<=region_center_2[1][0]))
@@ -115,7 +125,7 @@ while(1):
     # print(of_height_mean)
     point_init = [int(a[1]-center_ratio_x*a[1]/2),int(a[0]/2)]
     mask_center_2_mean = cv2.arrowedLine(mask,(point_init[0],point_init[1]),(int(point_init[0]+scale_mean_center_2_show*of_center_2_mean[0]),int(point_init[1]+scale_mean_center_2_show*of_center_2_mean[1])),(255,255,0),3)
-    
+
 
 
     id_avoid = np.where(np.logical_and(np.logical_and(np.logical_and(p0[:,0,1]>=region_avoid[0][1] , p0[:,0,1]<=region_avoid[1][1]),p0[:,0,0]>=region_avoid[0][0]),p0[:,0,0]<=region_avoid[1][0]))
@@ -128,7 +138,7 @@ while(1):
     # print(of_height_mean)
     point_init = [int(a[1]/2),int(a[0]/2)]
     mask_avoid_mean = cv2.arrowedLine(mask,(point_init[0],point_init[1]),(int(point_init[0]+scale_mean_avoid_show*of_avoid_mean[0]),int(point_init[1]+scale_mean_avoid_show*of_avoid_mean[1])),(255,255,0),3)
-    
+
 
     #### testing optical flow in  regions
     # id_height = id_avoid
